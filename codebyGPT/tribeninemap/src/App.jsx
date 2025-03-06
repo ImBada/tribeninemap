@@ -174,7 +174,7 @@ const MapBuilder = () => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">프랙탈 간이 지도 그리기</h2>
-      <div className="rotate-180 w-full min-h-screen bg-white overflow-auto">
+      <div className="rotate-180 bg-white overflow-auto">
         <Tree label={<div className="text-lg rotate-180">시작</div>}>
           {renderMap(map)}
         </Tree>
