@@ -254,7 +254,7 @@ const MapBuilder = () => {
       {contextMenu && ReactDOM.createPortal(
         <div
           ref={menuRef}
-          className="absolute bg-white border rounded shadow-lg z-[9999]"
+          className="absolute bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-[9999] transition-transform"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           {['일반 방', '보스 방', '출구'].map((typeOption) => (
