@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Tree, TreeNode } from 'react-organizational-chart';
 import { Button } from '@/components/ui/button';
+import ReactDOM from 'react-dom';
 
-const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, children }) => {
+const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, updateNodeType, children, setContextMenu }) => {
+  const menuRef = useRef(null);
+
   const getColor = () => {
     if (node.type === '출구') return 'bg-green-400';
     if (node.type === '시작') return 'bg-black text-white';
@@ -10,13 +13,38 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, chil
     return node.visited ? 'bg-green-200' : 'bg-gray-100';
   };
 
-  const isEndRoom = ['출구', '보스 방'].includes(node.type);
-  const isStartRoom = ['시작'].includes(node.type);
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      nodeId: node.id,
+    });
+  };
+
+  const handleClickOutside = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setContextMenu(null);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const changeNodeType = (type) => {
+    updateNodeType(node.id, type);
+    setContextMenu(null);
+  };
 
   return (
     <TreeNode
       label={
-        <div className={`inline-block p-1 rounded-xl text-center shadow-md ${getColor()} rotate-180`}>
+        <div
+          className={`inline-block p-1 rounded-xl text-center shadow-md ${getColor()} rotate-180`}
+          onContextMenu={handleContextMenu}
+        >
           <div className="text-xs">
             {node.type === '일반 방' ? (
               <input
@@ -31,34 +59,30 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, chil
             )}
           </div>
           <div className="flex space-x-1 justify-center mt-1">
-            {!isEndRoom && (
+            {!['출구', '보스 방'].includes(node.type) && (
               <>
-                {!isStartRoom && (!node.visited ? (
+                {node.type !== '시작' && (!node.visited ? (
                   <>
-                  <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
-                  <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
-                  <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
-                  <Button size="sm" onClick={() => markVisited(node.id)}>O</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
+                    <Button size="sm" onClick={() => markVisited(node.id)}>O</Button>
                   </>
                 ) : (
                   <Button size="sm" onClick={() => markVisited(node.id, false)}>X</Button>
                 ))}
-
-              </>
-            )}
-            {isStartRoom && (
-              <>
-                  <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
-                  <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
-                  <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
+                {node.type === '시작' && (
+                  <>
+                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
+                  </>
+                )}
               </>
             )}
             {node.type !== '시작' && (
-              <>
               <Button size="sm" variant="destructive" onClick={() => removeNode(node.id)}>🗑️</Button>
-              </>
             )}
-
           </div>
         </div>
       }
@@ -69,6 +93,19 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, chil
 };
 
 const MapBuilder = () => {
+  const [contextMenu, setContextMenu] = useState(null);
+  const menuRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setContextMenu(null);
+      }
+    };
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const [map, setMap] = useState(() => {
     const savedMap = localStorage.getItem('gameMap');
     return savedMap
@@ -81,6 +118,26 @@ const MapBuilder = () => {
           children: [],
         };
   });
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      nodeId: node.id,
+    });
+  };
+
+  const updateNodeType = (nodeId, newType) => {
+    setMap(prevMap => {
+      const updatedMap = updateNodeById(prevMap, nodeId, node => ({
+        ...node,
+        type: newType,
+      }));
+      localStorage.setItem('gameMap', JSON.stringify(updatedMap));
+      return updatedMap;
+    });
+  };
 
   const [mapText, setMapText] = useState('');
 
@@ -156,6 +213,8 @@ const MapBuilder = () => {
       markVisited={markVisited}
       removeNode={removeNode}
       updateRoomText={updateRoomText}
+      updateNodeType={updateNodeType}
+      setContextMenu={setContextMenu} 
     >
       {node.children.map(renderMap)}
     </RoomNode>
@@ -174,6 +233,8 @@ const MapBuilder = () => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">프랙탈 간이 지도 그리기</h2>
+      <div>각 블록에 마우스 우클릭: 속성 변경 (방, 보스, 출구 중 선택)</div>
+      <div>각 블록의 버튼: 방, 보스, 출구 추가 / O 확인 완료 (블록 작아짐) / 지우기</div>
       <div className="rotate-180 bg-white overflow-auto">
         <Tree label={<div className="text-lg rotate-180">시작</div>}>
           {renderMap(map)}
@@ -190,6 +251,27 @@ const MapBuilder = () => {
           placeholder="여기에 지도 데이터를 붙여넣거나 저장된 데이터가 표시됩니다."
         />
       </div>
+      {contextMenu && ReactDOM.createPortal(
+        <div
+          ref={menuRef}
+          className="absolute bg-white border rounded shadow-lg z-[9999]"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          {['일반 방', '보스 방', '출구'].map((typeOption) => (
+            <div
+              key={typeOption}
+              className="p-2 cursor-pointer hover:bg-gray-100"
+              onClick={() => {
+                updateNodeType(contextMenu.nodeId, typeOption);
+                setContextMenu(null);
+              }}
+            >
+              {typeOption}
+            </div>
+          ))}
+        </div>,
+        document.getElementById('context-menu-root')
+      )}
     </div>
   );
 };
