@@ -240,9 +240,7 @@ const MapBuilder = () => {
   <div className="w-full flex justify-center items-center">
     <div className="max-w-[90vw] max-h-[80vh] overflow-auto p-4 border rounded-lg shadow-md bg-white">
       {/* 트리 컨테이너 (회전 O) */}
-      <Tree 
-        label={<div className="text-lg">프랙탈</div>}
-      >
+      <Tree>
         <div className="rotate-180">
           {renderMap(map)}
         </div>
