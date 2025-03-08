@@ -81,7 +81,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
               </>
             )}
             {node.type !== '시작' && (
-              <Button size="sm" variant="destructive" onClick={() => removeNode(node.id)}>🗑️</Button>
+                <Button size="sm" variant="destructive" onClick={() => removeNode(node.id)}>🗑️</Button>
             )}
           </div>
         </div>
@@ -231,48 +231,59 @@ const MapBuilder = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">프랙탈 간이 지도 그리기</h2>
-      <div>각 블록에 마우스 우클릭: 속성 변경 (방, 보스, 출구 중 선택)</div>
-      <div>각 블록의 버튼: 방, 보스, 출구 추가 / O 확인 완료 (블록 작아짐) / 지우기</div>
-      <div className="rotate-180 bg-white overflow-auto">
-        <Tree label={<div className="text-lg rotate-180">시작</div>}>
+<div className="p-4">
+  <h2 className="text-xl font-bold mb-4">프랙탈 간이 지도 그리기</h2>
+  <div>각 블록에 마우스 우클릭: 속성 변경 (방, 보스, 출구 중 선택)</div>
+  <div>각 블록의 버튼: 방, 보스, 출구 추가 / O 확인 완료 (블록 작아짐) / 지우기</div>
+  
+  {/* 스크롤 컨테이너 (회전 X) */}
+  <div className="w-full flex justify-center items-center">
+    <div className="max-w-[90vw] max-h-[80vh] overflow-auto p-4 border rounded-lg shadow-md bg-white">
+      {/* 트리 컨테이너 (회전 O) */}
+      <Tree 
+        label={<div className="text-lg">프랙탈</div>}
+      >
+        <div className="rotate-180">
           {renderMap(map)}
-        </Tree>
-      </div>
-      <div className="mt-4 space-y-2">
-        <Button onClick={saveMap}>지도 저장하기</Button>
-        <Button className="ml-2" onClick={loadMap}>지도 불러오기</Button>
-        <textarea
-          className="w-full p-2 mt-2 border rounded bg-white"
-          rows="5"
-          value={mapText}
-          onChange={(e) => setMapText(e.target.value)}
-          placeholder="여기에 지도 데이터를 붙여넣거나 저장된 데이터가 표시됩니다."
-        />
-      </div>
-      {contextMenu && ReactDOM.createPortal(
-        <div
-          ref={menuRef}
-          className="absolute bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-[9999] transition-transform"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          {['일반 방', '보스 방', '출구'].map((typeOption) => (
-            <div
-              key={typeOption}
-              className="p-2 cursor-pointer hover:bg-gray-100"
-              onClick={() => {
-                updateNodeType(contextMenu.nodeId, typeOption);
-                setContextMenu(null);
-              }}
-            >
-              {typeOption}
-            </div>
-          ))}
-        </div>,
-        document.getElementById('context-menu-root')
-      )}
+        </div>
+      </Tree>
     </div>
+  </div>
+
+  <div className="mt-4 space-y-2">
+    <Button onClick={saveMap}>지도 저장하기</Button>
+    <Button className="ml-2" onClick={loadMap}>지도 불러오기</Button>
+    <textarea
+      className="w-full p-2 mt-2 border rounded bg-white"
+      rows="5"
+      value={mapText}
+      onChange={(e) => setMapText(e.target.value)}
+      placeholder="여기에 지도 데이터를 붙여넣거나 저장된 데이터가 표시됩니다."
+    />
+  </div>
+
+  {contextMenu && ReactDOM.createPortal(
+    <div
+      ref={menuRef}
+      className="absolute bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-[9999] transition-transform"
+      style={{ top: contextMenu.y, left: contextMenu.x }}
+    >
+      {['일반 방', '보스 방', '출구'].map((typeOption) => (
+        <div
+          key={typeOption}
+          className="p-2 cursor-pointer hover:bg-gray-100"
+          onClick={() => {
+            updateNodeType(contextMenu.nodeId, typeOption);
+            setContextMenu(null);
+          }}
+        >
+          {typeOption}
+        </div>
+      ))}
+    </div>,
+    document.getElementById('context-menu-root')
+  )}
+</div>
   );
 };
 
