@@ -241,7 +241,7 @@ const MapBuilder = () => {
     <div className="max-w-[90vw] max-h-[80vh] overflow-auto p-4 border rounded-lg shadow-md bg-white">
       {/* 트리 컨테이너 (회전 O) */}
       <Tree>
-        <div className="rotate-180">
+        <div className="rotate-180 scale-90">
           {renderMap(map)}
         </div>
       </Tree>
