@@ -63,9 +63,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
               <>
                 {node.type !== '시작' && (!node.visited ? (
                   <>
-                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
-                    <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
-                    <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>+</Button>
                     <Button size="sm" onClick={() => markVisited(node.id)}>O</Button>
                   </>
                 ) : (
@@ -73,9 +71,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
                 ))}
                 {node.type === '시작' && (
                   <>
-                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>방</Button>
-                    <Button size="sm" onClick={() => addPath(node.id, '보스 방')}>보스</Button>
-                    <Button size="sm" onClick={() => addPath(node.id, '출구')}>출구</Button>
+                    <Button size="sm" onClick={() => addPath(node.id, '일반 방')}>+</Button>
                   </>
                 )}
               </>
