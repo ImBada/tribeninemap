@@ -47,7 +47,8 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
         <div
           className={`inline-block p-1 rounded-xl text-center shadow-md ${getColor()} rotate-180`}
           onContextMenu={handleContextMenu}
-        >
+          style={{ minWidth: '50px' }}  // 원하는 크기로 설정
+          >
           <div className="text-xs">
             {node.type === '일반 방' ? (
               <input
