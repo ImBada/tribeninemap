@@ -3,7 +3,7 @@ import { Tree, TreeNode } from 'react-organizational-chart';
 import { Button } from '@/components/ui/button';
 import ReactDOM from 'react-dom';
 
-const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, updateNodeType, children, setContextMenu }) => {
+const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, updateNodeType, children, setContextMenu, isSimpleMode }) => {
   const menuRef = useRef(null);
 
   const getColor = () => {
@@ -59,7 +59,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
               node.type
             )}
           </div>
-          <div className="flex space-x-1 justify-center mt-1">
+          <div className="flex space-x-1 justify-center mt-1" style={{ display: isSimpleMode ? 'none' : 'flex' }}>
             {!['출구', '보스 방'].includes(node.type) && (
               <>
                 {node.type !== '시작' && (!node.visited ? (
@@ -92,6 +92,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
 const MapBuilder = () => {
   const [contextMenu, setContextMenu] = useState(null);
   const menuRef = useRef(null);
+  const [isSimpleMode, setIsSimpleMode] = useState(false);
   
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -211,7 +212,8 @@ const MapBuilder = () => {
       removeNode={removeNode}
       updateRoomText={updateRoomText}
       updateNodeType={updateNodeType}
-      setContextMenu={setContextMenu} 
+      setContextMenu={setContextMenu}
+      isSimpleMode={isSimpleMode}
     >
       {node.children.map(renderMap)}
     </RoomNode>
@@ -232,6 +234,7 @@ const MapBuilder = () => {
   <h2 className="text-xl font-bold mb-4">프랙탈 간이 지도 그리기</h2>
   <div>각 블록에 마우스 우클릭: 속성 변경 (방, 보스, 출구 중 선택)</div>
   <div>각 블록의 버튼: 방, 보스, 출구 추가 / O 확인 완료 (블록 작아짐) / 지우기</div>
+  <div>심플 모드: 텍스트 입력창 빼고 다 사라짐. 각 블록에 마우스 우클릭 시 모든 버튼 조작 가능 (추가, 변경 등)</div>
   
   {/* 스크롤 컨테이너 (회전 X) */}
   <div className="w-full flex justify-center items-center">
@@ -248,6 +251,9 @@ const MapBuilder = () => {
   <div className="mt-4 space-y-2">
     <Button onClick={saveMap}>지도 저장하기</Button>
     <Button className="ml-2" onClick={loadMap}>지도 불러오기</Button>
+    <Button className="ml-2" onClick={() => setIsSimpleMode(!isSimpleMode)}>
+      {isSimpleMode ? '일반 모드' : '심플 모드'}
+    </Button>
     <textarea
       className="w-full p-2 mt-2 border rounded bg-white"
       rows="5"
@@ -275,6 +281,47 @@ const MapBuilder = () => {
           {typeOption}
         </div>
       ))}
+      {isSimpleMode && (
+        <>
+          <hr className="border-t border-gray-200 my-1" />
+          <div
+            className="p-2 cursor-pointer hover:bg-gray-100"
+            onClick={() => {
+              addPath(contextMenu.nodeId, '일반 방');
+              setContextMenu(null);
+            }}
+          >
+            + 방 추가
+          </div>
+          <div
+            className="p-2 cursor-pointer hover:bg-gray-100"
+            onClick={() => {
+              markVisited(contextMenu.nodeId, true);
+              setContextMenu(null);
+            }}
+          >
+            O 방문 완료
+          </div>
+          <div
+            className="p-2 cursor-pointer hover:bg-gray-100"
+            onClick={() => {
+              markVisited(contextMenu.nodeId, false);
+              setContextMenu(null);
+            }}
+          >
+            X 방문 취소
+          </div>
+          <div
+            className="p-2 cursor-pointer text-red-500 hover:bg-gray-100"
+            onClick={() => {
+              removeNode(contextMenu.nodeId);
+              setContextMenu(null);
+            }}
+          >
+            🗑️ 삭제
+          </div>
+        </>
+      )}
     </div>,
     document.getElementById('context-menu-root')
   )}
