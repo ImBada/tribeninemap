@@ -15,6 +15,7 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
 
   const handleContextMenu = (e) => {
     e.preventDefault();
+    if (node.type === '시작') return; // 시작 노드는 우클릭 메뉴 비활성화
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
