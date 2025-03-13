@@ -15,11 +15,13 @@ const RoomNode = ({ node, addPath, markVisited, removeNode, updateRoomText, upda
 
   const handleContextMenu = (e) => {
     e.preventDefault();
-    if (node.type === '시작') return; // 시작 노드는 우클릭 메뉴 비활성화
+    if (node.type === '시작' && !isSimpleMode) return; // 심플 모드가 아닐 때만 시작 노드 컨텍스트 메뉴 비활성화
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
+      node: node,
       nodeId: node.id,
+      nodeType: node.type,
     });
   };
 
@@ -269,57 +271,66 @@ const MapBuilder = () => {
       className="absolute bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-[9999] transition-transform"
       style={{ top: contextMenu.y, left: contextMenu.x }}
     >
-      {['일반 방', '보스 방', '출구'].map((typeOption) => (
+      {contextMenu.nodeType === '시작' && isSimpleMode ? (
         <div
-          key={typeOption}
           className="p-2 cursor-pointer hover:bg-gray-100"
           onClick={() => {
-            updateNodeType(contextMenu.nodeId, typeOption);
+            addPath(contextMenu.nodeId, '일반 방');
             setContextMenu(null);
           }}
         >
-          {typeOption}
+          + 방 추가
         </div>
-      ))}
-      {isSimpleMode && (
+      ) : (
         <>
-          <hr className="border-t border-gray-200 my-1" />
-          <div
-            className="p-2 cursor-pointer hover:bg-gray-100"
-            onClick={() => {
-              addPath(contextMenu.nodeId, '일반 방');
-              setContextMenu(null);
-            }}
-          >
-            + 방 추가
-          </div>
-          <div
-            className="p-2 cursor-pointer hover:bg-gray-100"
-            onClick={() => {
-              markVisited(contextMenu.nodeId, true);
-              setContextMenu(null);
-            }}
-          >
-            O 방문 완료
-          </div>
-          <div
-            className="p-2 cursor-pointer hover:bg-gray-100"
-            onClick={() => {
-              markVisited(contextMenu.nodeId, false);
-              setContextMenu(null);
-            }}
-          >
-            X 방문 취소
-          </div>
-          <div
-            className="p-2 cursor-pointer text-red-500 hover:bg-gray-100"
-            onClick={() => {
-              removeNode(contextMenu.nodeId);
-              setContextMenu(null);
-            }}
-          >
-            🗑️ 삭제
-          </div>
+          {['일반 방', '보스 방', '출구'].map((typeOption) => (
+            <div
+              key={typeOption}
+              className="p-2 cursor-pointer hover:bg-gray-100"
+              onClick={() => {
+                updateNodeType(contextMenu.nodeId, typeOption);
+                setContextMenu(null);
+              }}
+            >
+              {typeOption}
+            </div>
+          ))}
+          {isSimpleMode && (
+            <>
+              <hr className="border-t border-gray-200 my-1" />
+              {contextMenu.nodeType !== '보스 방' && contextMenu.nodeType !== '출구' && (
+                <div
+                  className="p-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    addPath(contextMenu.nodeId, '일반 방');
+                    setContextMenu(null);
+                  }}
+                >
+                  + 방 추가
+                </div>
+              )}
+              {contextMenu.nodeType !== '보스 방' && contextMenu.nodeType !== '출구' && (
+              <div
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => {
+                  markVisited(contextMenu.nodeId, !contextMenu.node.visited);
+                  setContextMenu(null);
+                }}
+              >
+                {contextMenu.node.visited ? 'X 방문 취소' : 'O 방문 완료'}
+              </div>
+              )}
+              <div
+                className="p-2 cursor-pointer text-red-500 hover:bg-gray-100"
+                onClick={() => {
+                  removeNode(contextMenu.nodeId);
+                  setContextMenu(null);
+                }}
+              >
+                🗑️ 삭제
+              </div>
+            </>
+          )}
         </>
       )}
     </div>,
